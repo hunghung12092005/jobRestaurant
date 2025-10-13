@@ -1,0 +1,45 @@
+{
+  "local": {
+    "username": "postgres",
+    "password": "12092005a",
+    "database": "postgres",
+    "host": "localhost",
+    "port": "5432",
+    "dialect": "postgres",
+    "logging": false,
+    "pool": {
+      "max": 100,
+      "min": 20,
+      "acquire": 30000,
+      "idle": 10000
+    }
+  },
+  "development": {
+    "username": "postgres",
+    "password": "Tesop@2023!",
+    "database": "omini-channel",
+    "host": "dbnet",
+    "port": "5432",
+    "dialect": "postgres",
+    "pool": {
+      "max": 100,
+      "min": 20,
+      "acquire": 30000,
+      "idle": 10000
+    }
+  },
+  "production": {
+    "username": "postgres",
+    "password": "Tesop@2023!",
+    "database": "omini-channel",
+    "host": "dbnet-tesop",
+    "port": "5432",
+    "dialect": "postgres",
+    "pool": {
+      "max": 100,
+      "min": 20,
+      "acquire": 30000,
+      "idle": 10000
+    }
+  }
+}
