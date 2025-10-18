@@ -16,7 +16,7 @@
   },
   "development": {
     "username": "postgres",
-    "password": "Tesop@2023!",
+    "password": "",
     "database": "omini-channel",
     "host": "dbnet",
     "port": "5432",
@@ -30,7 +30,7 @@
   },
   "production": {
     "username": "postgres",
-    "password": "Tesop@2023!",
+    "password": "",
     "database": "omini-channel",
     "host": "dbnet-tesop",
     "port": "5432",

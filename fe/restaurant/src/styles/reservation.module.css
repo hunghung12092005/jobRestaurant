@@ -1,0 +1,93 @@
+/* styles/reservation.module.css */
+
+.reservationViewContainer {
+  padding: 30px;
+  min-height: 100vh;
+  background-image: linear-gradient(to top, #f3e7e9 0%, #e3eeff 99%, #e3eeff 100%);
+  background-size: cover;
+  background-attachment: fixed;
+}
+
+.mainCard {
+  box-shadow: 0 12px 40px rgba(255, 112, 67, 0.15);
+  border-radius: 20px;
+  padding: 24px 0;
+  background-color: #fff; /* Đảm bảo nền card trắng */
+}
+
+.headerRow {
+  margin-bottom: 30px;
+  padding: 0 24px;
+}
+
+.pageTitle {
+  margin: 0;
+  color: var(--ant-color-primary); /* Sử dụng biến từ Ant Design token */
+  display: flex;
+  align-items: center;
+  font-weight: 700;
+}
+
+.pageTitle svg { /* Icon trong tiêu đề */
+  margin-right: 12px;
+  font-size: 32px;
+  color: var(--ant-color-primary);
+}
+
+.filterSelect {
+  width: 180px;
+  border-radius: 10px;
+}
+
+.tabsContainer {
+  padding: 0 24px;
+}
+
+/* Calendar Specific Styles */
+.calendarEventList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 80px;
+  overflow-y: auto;
+}
+
+.calendarEventItem {
+  color: #fff;
+  margin: 1px 0;
+  padding: 2px 4px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: all 0.2s ease-in-out;
+}
+
+.calendarEventItem:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.calendarEventItem svg {
+  margin-right: 4px;
+}
+
+/* Antd override - adjust calendar cells for better look */
+:global(.ant-picker-cell-inner) {
+  border-radius: 8px !important;
+  transition: background-color 0.2s ease;
+}
+
+:global(.ant-picker-cell-in-view.ant-picker-cell-selected .ant-picker-cell-inner),
+:global(.ant-picker-cell-in-view.ant-picker-cell-today .ant-picker-cell-inner) {
+  background-color: var(--ant-color-primary-bg-hover) !important;
+  color: var(--ant-color-text) !important;
+}
+
+:global(.ant-picker-cell-in-view.ant-picker-cell-selected .ant-picker-cell-inner .ant-picker-calendar-date-value),
+:global(.ant-picker-cell-in-view.ant-picker-cell-today .ant-picker-cell-inner .ant-picker-calendar-date-value) {
+  color: var(--ant-color-primary) !important;
+  font-weight: bold;
+}

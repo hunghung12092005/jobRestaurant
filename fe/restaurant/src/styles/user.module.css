@@ -1,0 +1,140 @@
+/* styles/user.module.css */
+
+.container {
+  padding: 30px;
+  min-height: 100vh;
+  background-image: linear-gradient(to top, #f3e7e9 0%, #e3eeff 99%, #e3eeff 100%);
+  background-size: cover;
+  background-attachment: fixed;
+}
+
+.card {
+  box-shadow: 0 12px 40px rgba(255, 112, 67, 0.15);
+  border-radius: 20px;
+  padding: 24px; /* Tăng padding tổng thể của card */
+  background-color: #fff;
+  transition: all 0.3s ease; /* Thêm transition cho card */
+}
+
+.card:hover {
+  box-shadow: 0 16px 50px rgba(255, 112, 67, 0.2); /* Hiệu ứng hover cho card */
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px; /* Tăng khoảng cách dưới header */
+  padding-bottom: 20px;
+  border-bottom: 1px solid #f0f0f0; /* Đường kẻ dưới header */
+}
+
+.headerTitle {
+  margin: 0;
+  color: var(--ant-color-primary); /* Sử dụng biến từ Ant Design token */
+  display: flex;
+  align-items: center;
+  font-weight: 700;
+  font-size: 28px; /* Tăng kích thước tiêu đề */
+}
+
+.headerTitle svg {
+  margin-right: 12px;
+  font-size: 32px;
+  color: var(--ant-color-primary);
+}
+
+.addButton {
+  border-radius: 20px; /* Bo tròn nút */
+  font-weight: 600;
+  padding: 8px 20px;
+  height: auto; /* Điều chỉnh chiều cao tự động */
+  background-color: var(--ant-color-primary); /* Màu primary */
+  border-color: var(--ant-color-primary);
+  transition: all 0.3s ease;
+}
+
+.addButton:hover {
+  background-color: var(--ant-color-primary-hover) !important; /* Hiệu ứng hover */
+  border-color: var(--ant-color-primary-hover) !important;
+  transform: translateY(-2px); /* Nâng nhẹ nút lên */
+}
+
+.loading {
+  text-align: center;
+  padding: 50px;
+}
+
+.table {
+  border-radius: 12px; /* Bo tròn viền bảng */
+  overflow: hidden; /* Quan trọng để bo tròn border của bảng */
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05); /* Bóng đổ nhẹ cho bảng */
+}
+
+/* Các style Ant Design overrides cho bảng */
+:global(.ant-table-wrapper .ant-table) {
+  border-radius: 12px;
+  border: none; /* Bỏ border ngoài nếu muốn dùng shadow */
+}
+
+:global(.ant-table-thead > tr > th) {
+  background-color: #E0F2F7 !important; /* Xanh nhạt cho header bảng */
+  color: #424242 !important; /* Màu chữ đậm */
+  font-weight: 700 !important;
+  font-size: 15px !important;
+  padding: 14px 16px !important;
+}
+
+:global(.ant-table-tbody > tr.ant-table-row-hover > td) {
+  background-color: #FFFDE7 !important; /* Màu kem nhẹ khi hover */
+  transition: background-color 0.2s ease;
+}
+
+:global(.ant-table-tbody > tr > td) {
+  padding: 12px 16px !important;
+  font-size: 14px;
+}
+
+:global(.ant-table-bordered .ant-table-tbody > tr > td) {
+  border-right: 1px solid #E0E0E0;
+  border-bottom: 1px solid #E0E0E0;
+}
+
+:global(.ant-table-bordered .ant-table-thead > tr > th) {
+  border-right: 1px solid #B2EBF2; /* Border giữa các cột header */
+  border-bottom: 1px solid #B2EBF2;
+}
+
+:global(.ant-table-pagination.ant-pagination) {
+  margin-top: 25px; /* Tăng khoảng cách pagination */
+  justify-content: flex-end; /* Căn phải pagination */
+}
+
+/* Custom column styles */
+.centerColumn {
+  text-align: center;
+}
+
+/* Action buttons */
+.deleteButton {
+  border-radius: 15px; /* Bo tròn nút xóa */
+  font-weight: 500;
+  padding: 4px 12px;
+}
+
+/* Role Tag */
+.roleTagAdmin {
+  background-color: #FF7043; /* Màu cam chủ đạo */
+  color: #fff;
+  border-radius: 12px;
+  padding: 4px 10px;
+  font-weight: 600;
+}
+
+.roleTagUser {
+  background-color: #42A5F5; /* Màu xanh info */
+  color: #fff;
+  border-radius: 12px;
+  padding: 4px 10px;
+  font-weight: 600;
+}

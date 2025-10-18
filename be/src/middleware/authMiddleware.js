@@ -13,7 +13,7 @@ export const authenticateToken = (req, res, next) => {
     // Lấy thông tin từ decoded
     const userId = 1; // Bạn có thể thay đổi logic để lấy userId từ decoded nếu cần
     const tenantId = 1; // Tương tự như trên
-    req.decodeToken = { username: decoded.username, userId, tenantId };
+    req.decodeToken = { username: decoded.username, userId, tenantId ,role: decoded.role}; // Gán thông tin vào req.decodeToken
 
     next(); // Tiếp tục đến middleware hoặc route tiếp theo
   });

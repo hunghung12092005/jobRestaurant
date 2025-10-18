@@ -37,7 +37,8 @@ export const registerUser = async (username, email, password) => {
 
   // hash mật khẩu
   const hashedPassword = await bcrypt.hash(password, 10);
-  const newUser = await User.create({ username, email, password: hashedPassword });
+  const role = 'admin'; 
+  const newUser = await User.create({ username, email, password: hashedPassword,role });
   return newUser;
 };
 
@@ -50,11 +51,32 @@ export const validateUser = async (usernameOrEmail, password) => {
       [db.Sequelize.Op.or]: [{ username: usernameOrEmail }, { email: usernameOrEmail }],
     },
   });
-
+  
+  if(user.status === 'inactive') {
+    throw new Error("Tài khoản của bạn đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên.");
+  }
   if (!user) return null;
 
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) return null;
 
+  return user;
+};
+export const getAllUsers = async () => {
+  try {
+    const users = await User.findAll(); // Lấy tất cả người dùng
+    return users;
+  } catch (error) {
+    throw new Error("Không thể lấy danh sách người dùng");
+  }
+};
+export const deleteUserById = async (id) => {
+  const user = await User.findByPk(id);
+
+  if (!user) {
+    throw new Error("Người dùng không tồn tại");
+  }
+
+  await user.destroy();
   return user;
 };

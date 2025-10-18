@@ -1,0 +1,69 @@
+/* styles/modal.module.css */
+
+.modalTitle {
+  display: flex;
+  align-items: center;
+  font-size: 22px;
+  color: #333;
+  font-weight: 700;
+}
+
+.modalTitle svg {
+  color: var(--ant-color-primary);
+  font-size: 24px;
+  margin-right: 8px;
+}
+
+.statusTag {
+  padding: 6px 12px;
+  border-radius: 15px;
+  margin-left: 8px;
+  text-transform: capitalize;
+}
+
+.modalContentSpace {
+  width: 100%;
+  padding: 20px 0;
+}
+
+.alertMessage {
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 15px;
+}
+
+.descriptionsContainer {
+  border-radius: 12px; /* Bo tròn descriptions */
+  overflow: hidden; /* Quan trọng để bo tròn border */
+}
+
+.descriptionsItemLabel {
+  font-weight: bold;
+  color: #666;
+  font-size: 15px;
+}
+
+.descriptionsItemContent {
+  font-size: 15px;
+}
+
+.descriptionTag {
+  font-size: 14px;
+  padding: 4px 8px;
+  border-radius: 12px;
+}
+
+.modalFooterButton {
+  border-radius: 20px;
+}
+
+.modalCompleteButton {
+  background-color: var(--ant-color-primary);
+  border-color: var(--ant-color-primary);
+}
+
+.modalCompleteButton:hover,
+.modalCompleteButton:focus {
+  background-color: var(--ant-color-primary-hover) !important;
+  border-color: var(--ant-color-primary-hover) !important;
+}
