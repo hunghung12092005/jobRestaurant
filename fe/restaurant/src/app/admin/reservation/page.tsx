@@ -41,6 +41,7 @@ import { GET_RESERVATIONS, GET_RESERVATION_BY_ID, UPDATE_RESERVATION_STATUS } fr
 // Import CSS Modules
 import reservationStyles from "../../../styles/reservation.module.css";
 import modalStyles from "../../../styles/modal.module.css";
+import { useAdminContext } from "../context/AdminContext";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -48,25 +49,25 @@ const { Option } = Select;
 interface Reservation {
   id: number;
   name: string;
-  phone: string;
-  people: number;
-  date: string;
-  time: string;
+  phoneNumber: string;
+  partySize: number;
+  reservationDate: string;
+  reservationTime: string;
   message?: string;
-  status: string;
+  status: number;
 }
 
 const statusColors: Record<string, string> = {
-  pending: "#FFC107", // Amber for pending
-  completed: "#4CAF50", // Green for completed
-  canceled: "#F44336", // Red for canceled
+  0: "#FFC107", // Amber for pending
+  1: "#4CAF50", // Green for completed
+  2: "#F44336", // Red for canceled
 };
 
-const formatStatus = (status: string) => {
+const formatStatus = (status: number) => {
   switch (status) {
-    case 'pending': return 'Đang chờ';
-    case 'completed': return 'Hoàn thành';
-    case 'canceled': return 'Đã hủy';
+    case 0: return 'Đang chờ';
+    case 1: return 'Hoàn thành';
+    case 2: return 'Đã hủy';
     default: return status;
   }
 };
@@ -80,16 +81,24 @@ const ReservationView: React.FC = () => {
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [pageSize, setPageSize] = useState(10);
-  const [statusFilter, setStatusFilter] = useState<string>("pending"); // Mặc định là 'pending'
-
+  const [statusFilter, setStatusFilter] = useState<number>(); // Mặc định là 'pending'
+  const { user, branch, setBranch } = useAdminContext();
   const fetchReservations = async (pageNumber = 1) => {
     try {
       setLoading(true);
-      const query = `?page=${pageNumber}&limit=${pageSize}&status=${statusFilter}`;
-      const res = await axiosInstance.get(`${GET_RESERVATIONS}${query}`);
-      const data = res.data.data || res.data;
+
+      const body = {
+        page: pageNumber,
+        size: pageSize,
+        status: statusFilter,
+        branch: branch,
+      };
+
+      const res = await axiosInstance.post(GET_RESERVATIONS, body);
+      // console.log("Fetched reservations:", res.data);
+      const data = res.data.reservations || res.data.data || res.data;
       setReservations(data);
-      setTotal(res.data.total || res.data.count || data.length);
+      setTotal(res.data.total || data.length);
       setPage(res.data.page || pageNumber);
     } catch (error) {
       console.error(error);
@@ -99,9 +108,10 @@ const ReservationView: React.FC = () => {
     }
   };
 
+
   useEffect(() => {
     fetchReservations(page);
-  }, [page, pageSize, statusFilter]);
+  }, [page, pageSize, statusFilter, branch]);
 
   const openReservationModal = async (id: number) => {
     try {
@@ -117,10 +127,11 @@ const ReservationView: React.FC = () => {
     }
   };
 
-  const updateStatus = async (id: number, status: string) => {
+  const updateStatus = async (reservationId: number, status: number) => {
     try {
+      console.log("Updating reservation status:", reservationId, status);
       setModalLoading(true);
-      await axiosInstance.put(`${UPDATE_RESERVATION_STATUS}/${id}`, { status });
+      await axiosInstance.post(`${UPDATE_RESERVATION_STATUS}`, { reservationId, status });
       message.success(`Đơn đặt bàn đã được chuyển sang trạng thái: ${formatStatus(status)}`);
       setModalVisible(false);
       fetchReservations(page);
@@ -145,31 +156,31 @@ const ReservationView: React.FC = () => {
     },
     {
       title: "Gọi cho",
-      dataIndex: "phone",
+      dataIndex: "phoneNumber",
       key: "phone",
       width: 120,
       render: (text: string) => <Text copyable>{text}</Text>
     },
     {
       title: "Số bạn",
-      dataIndex: "people",
-      key: "people",
+      dataIndex: "partySize",
+      key: "partySize",
       width: 80,
       align: 'center' as const,
-      sorter: (a: Reservation, b: Reservation) => a.people - b.people,
+      sorter: (a: Reservation, b: Reservation) => a.partySize - b.partySize,
       render: (text: number) => <Tag color="geekblue" icon={<TeamOutlined />}>{text}</Tag>
     },
     {
       title: "Ngày hẹn",
-      dataIndex: "date",
+      dataIndex: "reservationDate",
       key: "date",
       width: 120,
-      sorter: (a: Reservation, b: Reservation) => dayjs(a.date).unix() - dayjs(b.date).unix(),
+      sorter: (a: Reservation, b: Reservation) => dayjs(a.reservationDate).unix() - dayjs(b.reservationDate).unix(),
       render: (date: string) => dayjs(date).format("DD/MM/YYYY")
     },
     {
       title: "Giờ đón",
-      dataIndex: "time",
+      dataIndex: "reservationTime",
       key: "time",
       width: 100,
       render: (time: string) => <Space><ClockCircleOutlined /> {time}</Space>
@@ -179,9 +190,20 @@ const ReservationView: React.FC = () => {
       dataIndex: "status",
       key: "status",
       width: 120,
-      render: (status: string) => (
+      render: (status: number) => (
         <Tag color={statusColors[status]} style={{ textTransform: 'capitalize' }}>
           {formatStatus(status)}
+        </Tag>
+      )
+    },
+    {
+      title: "Chi nhánh",
+      dataIndex: "tenant",
+      key: "tenant",
+      width: 120,
+      render: (tenant: string) => (
+        <Tag color='red' style={{ textTransform: 'capitalize' }}>
+          {tenant}
         </Tag>
       )
     },
@@ -199,20 +221,20 @@ const ReservationView: React.FC = () => {
   ], []);
 
   const dateCellRender = (value: dayjs.Dayjs) => {
-    const dayReservations = reservations.filter(r => dayjs(r.date).isSame(value, 'day'));
+    const dayReservations = reservations.filter(r => dayjs(r.reservationDate).isSame(value, 'day'));
     if (!dayReservations.length) return null;
 
     return (
       <ul className={reservationStyles.calendarEventList}>
-        {dayReservations.map(r => (
-          <Tooltip key={r.id} title={`${r.name} - ${r.people} người - ${formatStatus(r.status)}`}>
+        {dayReservations.map((r: any) => (
+          <Tooltip key={r.id} title={`${r.name} - ${r.partySize} người - ${formatStatus(r.status)}`}>
             <li
               className={reservationStyles.calendarEventItem}
               style={{ backgroundColor: statusColors[r.status] }} // Màu vẫn dùng inline để linh hoạt theo status
               onClick={() => openReservationModal(r.id)}
             >
               <ClockCircleOutlined />
-              {r.time} - {r.name}
+              {r.reservationTime} - {r.name}
             </li>
           </Tooltip>
         ))}
@@ -233,10 +255,10 @@ const ReservationView: React.FC = () => {
             current: page,
             pageSize,
             total,
-            onChange: (p, ps) => { setPage(p); setPageSize(ps); },
+            onChange: (p: any, ps: any) => { setPage(p); setPageSize(ps); },
             showSizeChanger: true,
             pageSizeOptions: ['5', '10', '20', '50'],
-            showTotal: (total, range) => `${range[0]}-${range[1]} / ${total} đơn`
+            showTotal: (total: any, range: any) => `${range[0]}-${range[1]} / ${total} đơn`
           }}
           loading={loading}
           scroll={{ x: 900 }}
@@ -334,7 +356,6 @@ const ReservationView: React.FC = () => {
     >
       <div className={reservationStyles.reservationViewContainer}>
         <Card
-          bordered={false}
           className={reservationStyles.mainCard}
         >
           <Row justify="space-between" align="middle" className={reservationStyles.headerRow}>
@@ -349,14 +370,15 @@ const ReservationView: React.FC = () => {
                 <Select
                   value={statusFilter}
                   className={reservationStyles.filterSelect}
-                  onChange={(value) => {
+                  onChange={(value: any) => {
                     setStatusFilter(value);
                     setPage(1);
                   }}
                 >
-                  <Option value="pending">Đang chờ (chăm sóc)</Option>
-                  <Option value="completed">Hoàn thành (vui vẻ)</Option>
-                  <Option value="canceled">Đã hủy (tiếc quá)</Option>
+                  <Option value="">Tất cả</Option>
+                  <Option value="0">Đang chờ (chăm sóc)</Option>
+                  <Option value="1">Hoàn thành (vui vẻ)</Option>
+                  <Option value="2">Đã hủy (tiếc quá)</Option>
                 </Select>
               </Space>
             </Col>
@@ -370,11 +392,14 @@ const ReservationView: React.FC = () => {
             <Space className={modalStyles.modalTitle}>
               <SmileOutlined />
               <Text strong>Chi tiết Đặt bàn #{selectedReservation?.id || '...'}</Text>
-              {selectedReservation &&
-                <Tag color={statusColors[selectedReservation.status]} className={modalStyles.statusTag}>
+              {selectedReservation && (
+                <Tag
+                  color={statusColors[selectedReservation.status]}
+                  className={modalStyles.statusTag}
+                >
                   {formatStatus(selectedReservation.status)}
                 </Tag>
-              }
+              )}
             </Space>
           }
           open={modalVisible}
@@ -383,67 +408,141 @@ const ReservationView: React.FC = () => {
           footer={
             selectedReservation
               ? [
-                <Button key="close" onClick={() => setModalVisible(false)} className={modalStyles.modalFooterButton}>
-                  Đóng lại
-                </Button>,
                 <Button
-                  key="cancel"
-                  danger
-                  icon={<CloseCircleOutlined />}
-                  loading={modalLoading}
-                  onClick={() => updateStatus(selectedReservation.id, "canceled")}
+                  key="close"
+                  onClick={() => setModalVisible(false)}
                   className={modalStyles.modalFooterButton}
                 >
-                  Hủy đơn này
+                  Đóng lại
                 </Button>,
-                <Button
-                  key="complete"
-                  type="primary"
-                  icon={<CheckCircleOutlined />}
-                  loading={modalLoading}
-                  onClick={() => updateStatus(selectedReservation.id, "completed")}
-                  className={`${modalStyles.modalFooterButton} ${modalStyles.modalCompleteButton}`}
-                >
-                  Hoàn thành!
-                </Button>,
+                selectedReservation.status === 0 && (
+                  <Button
+                    key="cancel"
+                    danger
+                    icon={<CloseCircleOutlined />}
+                    loading={modalLoading}
+                    onClick={() => updateStatus(selectedReservation.id, 2)}
+                    className={modalStyles.modalFooterButton}
+                  >
+                    Hủy đơn này
+                  </Button>
+                ),
+                selectedReservation.status === 0 && (
+                  <Button
+                    key="complete"
+                    type="primary"
+                    icon={<CheckCircleOutlined />}
+                    loading={modalLoading}
+                    onClick={() => updateStatus(selectedReservation.id, 1)}
+                    className={`${modalStyles.modalFooterButton} ${modalStyles.modalCompleteButton}`}
+                  >
+                    Hoàn thành!
+                  </Button>
+                ),
               ]
               : null
           }
         >
           {modalLoading ? (
-            <div style={{ textAlign: 'center', padding: 50 }}><Spin size="large" tip="Đang gọi chi tiết..." /></div>
+            <div style={{ textAlign: 'center', padding: 50 }}>
+              <Spin size="large" tip="Đang gọi chi tiết...">
+                <div style={{ height: 100 }} /> {/* just acts as spinner body */}
+              </Spin>
+            </div>
+
           ) : selectedReservation ? (
-            <Space direction="vertical" size="large" className={modalStyles.modalContentSpace}>
+            <Space
+              orientation="vertical" // HA_MI updated
+              size="large"
+              className={modalStyles.modalContentSpace}
+            >
               <Alert
-                message={`Tình trạng hiện tại: ${formatStatus(selectedReservation.status)}`}
-                type={selectedReservation.status === 'pending' ? 'warning' : selectedReservation.status === 'completed' ? 'success' : 'error'}
+                title={`Tình trạng hiện tại: ${formatStatus(selectedReservation.status)}`} // HA_MI updated
+                type={
+                  selectedReservation.status === 0
+                    ? 'warning'
+                    : selectedReservation.status === 1
+                      ? 'success'
+                      : 'error'
+                }
                 showIcon
                 className={modalStyles.alertMessage}
-                description={selectedReservation.status === 'pending' ? "Đang chờ khách đến, chuẩn bị chu đáo nhé!" : selectedReservation.status === 'completed' ? "Tuyệt vời! Khách đã dùng bữa và rất hài lòng." : "Tiếc quá, khách đã hủy hẹn. Hãy liên hệ lại sau nhé!"}
+                description={
+                  selectedReservation.status === 0
+                    ? 'Đang chờ khách đến, chuẩn bị chu đáo nhé!'
+                    : selectedReservation.status === 1
+                      ? 'Tuyệt vời! Khách đã dùng bữa và rất hài lòng.'
+                      : 'Tiếc quá, khách đã hủy hẹn. Hãy liên hệ lại sau nhé!'
+                }
               />
               <Descriptions
                 column={2}
                 bordered
                 size="middle"
-                labelStyle={{ fontWeight: 'bold', color: '#666', fontSize: 15 }}
-                contentStyle={{ fontSize: 15 }}
+                styles={{
+                  label: { fontWeight: 'bold', color: '#666', fontSize: 15 },
+                  content: { fontSize: 15 },
+                }} // HA_MI updated
                 className={modalStyles.descriptionsContainer}
               >
-                <Descriptions.Item label={<Space><UserOutlined style={{ color: '#FF7043' }} /> Tên Khách</Space>} span={2}><Text strong>{selectedReservation.name}</Text></Descriptions.Item>
-                <Descriptions.Item label={<Space><PhoneOutlined style={{ color: '#42A5F5' }} /> Điện thoại</Space>} span={2}><Text copyable>{selectedReservation.phone}</Text></Descriptions.Item>
+                <Descriptions.Item
+                  label={<Space><UserOutlined style={{ color: '#FF7043' }} /> Tên Khách</Space>}
+                  span={2}
+                >
+                  <Text strong>{selectedReservation.name}</Text>
+                </Descriptions.Item>
 
-                <Descriptions.Item label={<Space><TeamOutlined style={{ color: '#66BB6A' }} /> Số bạn</Space>} span={1}><Tag color="geekblue" className={modalStyles.descriptionTag}>{selectedReservation.people} người</Tag></Descriptions.Item>
-                <Descriptions.Item label={<Space><CalendarOutlined style={{ color: '#FF7043' }} /> Ngày hẹn</Space>} span={1}>{dayjs(selectedReservation.date).format("DD/MM/YYYY")}</Descriptions.Item>
+                <Descriptions.Item
+                  label={<Space><PhoneOutlined style={{ color: '#42A5F5' }} /> Điện thoại</Space>}
+                  span={2}
+                >
+                  <Text copyable>{selectedReservation.phoneNumber}</Text>
+                </Descriptions.Item>
 
-                <Descriptions.Item label={<Space><ClockCircleOutlined style={{ color: '#FFD54F' }} /> Giờ đón</Space>} span={2}><Tag color="volcano" className={modalStyles.descriptionTag}>{selectedReservation.time}</Tag></Descriptions.Item>
+                <Descriptions.Item
+                  label={<Space><TeamOutlined style={{ color: '#66BB6A' }} /> Số bạn</Space>}
+                  span={1}
+                >
+                  <Tag color="geekblue" className={modalStyles.descriptionTag}>
+                    {selectedReservation.partySize} người
+                  </Tag>
+                </Descriptions.Item>
 
-                <Descriptions.Item label={<Space><MessageOutlined style={{ color: '#42A5F5' }} /> Lời nhắn</Space>} span={2}>
-                  {selectedReservation.message || <Text type="secondary">Khách không để lại lời nhắn nào, bạn có thể gọi hỏi thêm!</Text>}
+                <Descriptions.Item
+                  label={<Space><CalendarOutlined style={{ color: '#FF7043' }} /> Ngày hẹn</Space>}
+                  span={1}
+                >
+                  {dayjs(selectedReservation.reservationDate).format('DD/MM/YYYY')}
+                </Descriptions.Item>
+
+                <Descriptions.Item
+                  label={<Space><ClockCircleOutlined style={{ color: '#FFD54F' }} /> Giờ đón</Space>}
+                  span={2}
+                >
+                  <Tag color="volcano" className={modalStyles.descriptionTag}>
+                    {selectedReservation.reservationTime}
+                  </Tag>
+                </Descriptions.Item>
+
+                <Descriptions.Item
+                  label={<Space><MessageOutlined style={{ color: '#42A5F5' }} /> Lời nhắn</Space>}
+                  span={2}
+                >
+                  {selectedReservation.message || (
+                    <Text type="secondary">
+                      Khách không để lại lời nhắn nào, bạn có thể gọi hỏi thêm!
+                    </Text>
+                  )}
                 </Descriptions.Item>
               </Descriptions>
             </Space>
-          ) : <Text type="secondary">Không tìm thấy thông tin đặt bàn, có thể khách đã đi lạc đâu đó rồi!</Text>}
+          ) : (
+            <Text type="secondary">
+              Không tìm thấy thông tin đặt bàn, có thể khách đã đi lạc đâu đó rồi!
+            </Text>
+          )}
         </Modal>
+
       </div>
     </ConfigProvider>
   );

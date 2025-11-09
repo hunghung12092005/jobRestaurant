@@ -7,6 +7,9 @@ import { useRouter } from 'next/navigation';
 import '../../../styles/login.css';
 import axios from 'axios';
 import { API_LOGIN } from '../../../utils/constants';
+import { useDispatch } from "react-redux";
+import { loginSuccess } from "@/store/slices/authSlice";
+
 interface LoginFormValues {
     username: string;
     password: string;
@@ -15,13 +18,14 @@ interface LoginFormValues {
 export default function LoginPage() {
     const [loading, setLoading] = useState(false);
     const router = useRouter();
+    const dispatch = useDispatch();
 
     const onFinish = async (values: LoginFormValues) => {
         setLoading(true);
 
         try {
             const res = await axios.post(API_LOGIN, {
-                usernameOrEmail: values.username,
+                email: values.username,
                 password: values.password,
             });
 
@@ -29,7 +33,14 @@ export default function LoginPage() {
             if (res.data?.token) {
                 localStorage.setItem("token", res.data.token);
                 localStorage.setItem("isLoggedIn", "true");
-
+                localStorage.setItem("user", JSON.stringify(res.data.user));
+                // Save redux
+                dispatch(
+                    loginSuccess({
+                        token: res.data.token,
+                        user: res.data.user,
+                    })
+                );
                 message.success(res.data.message || "Đăng nhập thành công!");
                 router.push("/admin/user");
             }
@@ -51,19 +62,32 @@ export default function LoginPage() {
 
             <div className="login-content">
                 <div className="login-logo">
-                    <div className="logo-circle">
-                        <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
-                            <path d="M30 5L35 20H45L37 27L40 42L30 35L20 42L23 27L15 20H25L30 5Z" fill="#D4AF37" />
-                            <circle cx="30" cy="30" r="28" stroke="#D4AF37" strokeWidth="2" fill="none" />
-                        </svg>
+                    <div className="logo-circle" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '20px' }}>
+                        {/* Logo Hà Mi */}
+                        <img
+                            src="http://admin.hami-freiberg.de/assets/logo/logo.png"
+                            alt="Logo Hami"
+                            width={100}
+                            height={100}
+                            style={{ objectFit: "contain", borderRadius: "50%", boxShadow: "0 0 10px rgba(0,0,0,0.2)" }}
+                        />
+
+                        {/* Logo Kondo */}
+                        <img
+                            src="https://kando-freiberg.de/assets/logo/logo%20kando2-trang.png"
+                            alt="Logo Kondo"
+                            width={80}
+                            height={80}
+                            style={{ objectFit: "contain", borderRadius: "50%", boxShadow: "0 0 10px rgba(0,0,0,0.2)" }}
+                        />
                     </div>
                 </div>
 
-                <h1 className="login-title">La Maison Royale</h1>
-                <p className="login-subtitle">Hệ thống quản lý nhà hàng cao cấp</p>
+                <h1 className="login-title">KANDO & HAMI </h1>
+                <p className="login-subtitle">Hochwertiges Restaurantmanagementsystem</p>
 
                 <Card className="login-card">
-                    <h2 className="form-title">Đăng Nhập</h2>
+                    <h2 className="form-title">Einloggen</h2>
 
                     <Form
                         name="login"
@@ -73,26 +97,26 @@ export default function LoginPage() {
                         requiredMark={false}
                     >
                         <Form.Item
-                            label="Tên đăng nhập"
+                            label="Anmeldename"
                             name="username"
-                            rules={[{ required: true, message: 'Vui lòng nhập tên đăng nhập!' }]}
+                            rules={[{ required: true, message: 'Anmeldename!' }]}
                         >
                             <Input
                                 prefix={<UserOutlined className="input-icon" />}
-                                placeholder="Nhập tên đăng nhập"
+                                placeholder="Anmeldename"
                                 size="large"
                                 className="custom-input"
                             />
                         </Form.Item>
 
                         <Form.Item
-                            label="Mật khẩu"
+                            label="Passwort"
                             name="password"
-                            rules={[{ required: true, message: 'Vui lòng nhập mật khẩu!' }]}
+                            rules={[{ required: true, message: 'Bitte Passwort eingeben!' }]}
                         >
                             <Input.Password
                                 prefix={<LockOutlined className="input-icon" />}
-                                placeholder="Nhập mật khẩu"
+                                placeholder="Passwort"
                                 size="large"
                                 className="custom-input"
                             />
@@ -107,7 +131,7 @@ export default function LoginPage() {
                                 className="login-button"
                                 block
                             >
-                                Đăng Nhập
+                                Einloggen
                             </Button>
                         </Form.Item>
                     </Form>
@@ -116,7 +140,7 @@ export default function LoginPage() {
                 </Card>
 
                 <div className="copyright">
-                    © 2025 La Maison Royale. All rights reserved.
+                    © 2025 KANDO & HAMI. All rights reserved.
                 </div>
             </div>
         </div>

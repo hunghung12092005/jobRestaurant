@@ -15,6 +15,7 @@ import {
 } from '@ant-design/icons';
 import axiosInstance from "@/utils/axiosInstance";
 import { GET_CONTACTS } from "@/utils/constants";
+import { useAdminContext } from "../context/AdminContext";
 
 const { Title, Text } = Typography;
 
@@ -22,7 +23,8 @@ interface Contact {
   id: number;
   name: string;
   email: string;
-  phone: string;
+  phoneNumber: string;
+  tenant?: string;
   message?: string;
   // Đổi tên từ created_at sang createdAt để phù hợp với dữ liệu API
   createdAt: string; // "2025-10-16T16:03:25.965Z"
@@ -37,6 +39,7 @@ const ContactView: React.FC = () => {
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [pageSize, setPageSize] = useState(10);
+  const { user, branch, setBranch } = useAdminContext();
 
   // Helper function to format date from ISO 8601 string
   const formatDateTime = (dateString: string | undefined | null) => {
@@ -71,7 +74,16 @@ const ContactView: React.FC = () => {
   const fetchContacts = async (pageNumber = 1, pageLimit = pageSize) => {
     try {
       setLoading(true);
-      const res = await axiosInstance.get(`${GET_CONTACTS}?page=${pageNumber}&limit=${pageLimit}`);
+      console.log({
+        page: pageNumber,
+        limit: pageLimit,
+        tenant: branch || '',
+      });
+      const res = await axiosInstance.post(GET_CONTACTS, {
+        page: pageNumber,
+        limit: pageLimit,
+        tenant: branch || '',
+      });
       // Log để kiểm tra cấu trúc dữ liệu trả về từ API
       console.log("Fetched contacts data:", res.data);
 
@@ -91,7 +103,7 @@ const ContactView: React.FC = () => {
 
   useEffect(() => {
     fetchContacts(page, pageSize);
-  }, [page, pageSize]);
+  }, [page, pageSize, branch]);
 
   const columns = [
     {
@@ -123,7 +135,7 @@ const ContactView: React.FC = () => {
     },
     {
       title: "Điện thoại",
-      dataIndex: "phone",
+      dataIndex: "phoneNumber",
       key: "phone",
       render: (text: string) => (
         <Space>
@@ -167,6 +179,21 @@ const ContactView: React.FC = () => {
       width: 180,
     },
     {
+      title: "Chi nhánh",
+      dataIndex: "tenant",
+      key: "tenant",
+      ellipsis: { showTitle: true },
+      render: (text: string) => (
+        text ? (
+          <Text ellipsis={{ tooltip: text }}>
+            {text}
+          </Text>
+        ) : (
+          <Tag color="default">Không có</Tag>
+        )
+      ),
+    },
+    {
       title: "Hành động",
       key: "action",
       align: 'center' as 'center',
@@ -190,7 +217,7 @@ const ContactView: React.FC = () => {
 
   return (
     <div style={{ padding: 24, backgroundColor: '#f0f2f5', minHeight: 'calc(100vh - 114px)' }}>
-      <Card bordered={false} style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.09)', borderRadius: 8 }}>
+      <Card style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.09)', borderRadius: 8 }}>
         <Title level={3} style={{ marginBottom: 24, display: 'flex', alignItems: 'center', color: '#333' }}>
           <MailOutlined style={{ marginRight: 12, fontSize: 30, color: '#1890ff' }} />
           Quản lý Liên hệ khách hàng
@@ -208,17 +235,17 @@ const ContactView: React.FC = () => {
             total,
             showSizeChanger: true,
             pageSizeOptions: ['5', '10', '20', '50'],
-            onChange: (p, size) => {
+            onChange: (p: any, size: any) => {
               setPage(p);
               setPageSize(size || pageSize);
             },
-            showTotal: (total, range) => (
+            showTotal: (total: any, range: any) => (
               <Space>
                 <Tag color="blue">{total}</Tag>
                 liên hệ tổng cộng
               </Space>
             ),
-            position: ['bottomCenter'],
+            placement: ['bottomCenter'],
           }}
           bordered
           scroll={{ x: 'max-content' }}
@@ -252,23 +279,39 @@ const ContactView: React.FC = () => {
         centered
       >
         {selectedContact ? (
-          <Descriptions bordered column={1} size="middle" labelStyle={{ width: '160px', fontWeight: 'bold' }}>
+          <Descriptions
+            bordered
+            column={1}
+            size="middle"
+            styles={{
+              label: { width: '160px', fontWeight: 'bold' },
+            }}
+          >
             <Descriptions.Item label={<Space><UserOutlined /> Tên khách hàng</Space>}>
               {selectedContact.name}
             </Descriptions.Item>
+
             <Descriptions.Item label={<Space><MailOutlined /> Email</Space>}>
               <Text copyable>{selectedContact.email}</Text>
             </Descriptions.Item>
+
             <Descriptions.Item label={<Space><PhoneOutlined /> Điện thoại</Space>}>
-              <Text copyable>{selectedContact.phone}</Text>
+              <Text copyable>{selectedContact.phoneNumber}</Text>
             </Descriptions.Item>
+
             <Descriptions.Item label={<Space><MessageOutlined /> Tin nhắn</Space>}>
               {selectedContact.message || <Tag color="default">Không có tin nhắn</Tag>}
             </Descriptions.Item>
+
+            <Descriptions.Item label={<Space><CalendarOutlined /> Chi nhánh</Space>}>
+              {selectedContact.tenant || <Tag color="default">Không có chi nhánh</Tag>}
+            </Descriptions.Item>
+
             <Descriptions.Item label={<Space><CalendarOutlined /> Thời gian gửi</Space>}>
               {formatDateTime(selectedContact.createdAt)}
             </Descriptions.Item>
           </Descriptions>
+
         ) : (
           <div style={{ textAlign: 'center', padding: '50px 0' }}>
             <Spin size="large" tip="Đang tải chi tiết..." />
