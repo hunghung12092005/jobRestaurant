@@ -84,8 +84,7 @@ const ContactView: React.FC = () => {
         limit: pageLimit,
         tenant: branch || '',
       });
-      // Log để kiểm tra cấu trúc dữ liệu trả về từ API
-      console.log("Fetched contacts data:", res.data);
+      // console.log("Fetched contacts data:", res.data);
 
       // Đảm bảo truy cập đúng trường 'data' nếu nó nằm trong một đối tượng lồng ghép
       const fetchedData = res.data.data || res.data; // Use res.data.data if nested, else res.data
@@ -95,7 +94,7 @@ const ContactView: React.FC = () => {
       setPageSize(res.data.limit || pageLimit);
     } catch (error) {
       console.error("Failed to fetch contacts:", error);
-      message.error("Không thể tải danh sách liên hệ.");
+      message.error("Failed to load contact list.");
     } finally {
       setLoading(false);
     }
@@ -114,7 +113,7 @@ const ContactView: React.FC = () => {
       align: 'center' as 'center',
     },
     {
-      title: "Tên",
+      title: "Name",
       dataIndex: "name", // Phù hợp với Contact interface
       key: "name",
       render: (text: string) => <Text strong><UserOutlined style={{ marginRight: 6, color: '#1890ff' }} />{text}</Text>,
@@ -134,7 +133,7 @@ const ContactView: React.FC = () => {
       ellipsis: true,
     },
     {
-      title: "Điện thoại",
+      title: "Telefonnummer",
       dataIndex: "phoneNumber",
       key: "phone",
       render: (text: string) => (
@@ -146,7 +145,7 @@ const ContactView: React.FC = () => {
       ellipsis: true,
     },
     {
-      title: "Tin nhắn",
+      title: "Nachricht",
       dataIndex: "message",
       key: "message",
       ellipsis: { showTitle: true },
@@ -156,12 +155,12 @@ const ContactView: React.FC = () => {
             {text}
           </Text>
         ) : (
-          <Tag color="default">Không có</Tag>
+          <Tag color="default">Null</Tag>
         )
       ),
     },
     {
-      title: "Thời gian gửi",
+      title: "Gesendet am",
       dataIndex: "createdAt", // Đổi từ created_at sang createdAt
       key: "createdAt",
       render: (text: string) => (
@@ -179,7 +178,7 @@ const ContactView: React.FC = () => {
       width: 180,
     },
     {
-      title: "Chi nhánh",
+      title: "Zweig",
       dataIndex: "tenant",
       key: "tenant",
       ellipsis: { showTitle: true },
@@ -189,12 +188,12 @@ const ContactView: React.FC = () => {
             {text}
           </Text>
         ) : (
-          <Tag color="default">Không có</Tag>
+          <Tag color="default">Null</Tag>
         )
       ),
     },
     {
-      title: "Hành động",
+      title: "Aktion",
       key: "action",
       align: 'center' as 'center',
       width: 100,
@@ -209,7 +208,7 @@ const ContactView: React.FC = () => {
           }}
           className="view-detail-button"
         >
-          Chi tiết
+          Details
         </Button>
       ),
     },
@@ -220,7 +219,7 @@ const ContactView: React.FC = () => {
       <Card style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.09)', borderRadius: 8 }}>
         <Title level={3} style={{ marginBottom: 24, display: 'flex', alignItems: 'center', color: '#333' }}>
           <MailOutlined style={{ marginRight: 12, fontSize: 30, color: '#1890ff' }} />
-          Quản lý Liên hệ khách hàng
+          Kundenkontaktmanagement
         </Title>
         <Divider style={{ margin: '0 0 24px 0' }} />
 
@@ -242,7 +241,7 @@ const ContactView: React.FC = () => {
             showTotal: (total: any, range: any) => (
               <Space>
                 <Tag color="blue">{total}</Tag>
-                liên hệ tổng cộng
+                Kontakte insgesamt
               </Space>
             ),
             placement: ['bottomCenter'],
@@ -253,8 +252,8 @@ const ContactView: React.FC = () => {
             emptyText: (
               <div style={{ textAlign: 'center', padding: '40px 0' }}>
                 <img src="https://gw.alipayobjects.com/zos/antfincdn/ZHrcdLPrS/empty.svg" alt="no data" style={{ height: 80, marginBottom: 16 }} />
-                <p style={{ color: '#999', fontSize: 16 }}>Chưa có dữ liệu liên hệ nào.</p>
-                <Button type="link" onClick={() => fetchContacts(1)}>Tải lại dữ liệu</Button>
+                <p style={{ color: '#999', fontSize: 16 }}>Keine Kontaktdaten gefunden.</p>
+                <Button type="link" onClick={() => fetchContacts(1)}>Daten neu laden</Button>
               </div>
             ),
           }}
@@ -265,7 +264,7 @@ const ContactView: React.FC = () => {
         title={
           <Space>
             <InfoCircleOutlined style={{ color: '#1890ff', fontSize: 20 }} />
-            <Text strong style={{ fontSize: 18 }}>Chi tiết Liên hệ #{selectedContact?.id}</Text>
+            <Text strong style={{ fontSize: 18 }}>Details zu Kontakt #{selectedContact?.id}</Text>
           </Space>
         }
         open={modalVisible}
@@ -287,7 +286,7 @@ const ContactView: React.FC = () => {
               label: { width: '160px', fontWeight: 'bold' },
             }}
           >
-            <Descriptions.Item label={<Space><UserOutlined /> Tên khách hàng</Space>}>
+            <Descriptions.Item label={<Space><UserOutlined /> Name</Space>}>
               {selectedContact.name}
             </Descriptions.Item>
 
@@ -295,19 +294,19 @@ const ContactView: React.FC = () => {
               <Text copyable>{selectedContact.email}</Text>
             </Descriptions.Item>
 
-            <Descriptions.Item label={<Space><PhoneOutlined /> Điện thoại</Space>}>
+            <Descriptions.Item label={<Space><PhoneOutlined /> Telefonnummer</Space>}>
               <Text copyable>{selectedContact.phoneNumber}</Text>
             </Descriptions.Item>
 
-            <Descriptions.Item label={<Space><MessageOutlined /> Tin nhắn</Space>}>
-              {selectedContact.message || <Tag color="default">Không có tin nhắn</Tag>}
+            <Descriptions.Item label={<Space><MessageOutlined /> Nachricht</Space>}>
+              {selectedContact.message || <Tag color="default">Keine Nachricht</Tag>}
             </Descriptions.Item>
 
-            <Descriptions.Item label={<Space><CalendarOutlined /> Chi nhánh</Space>}>
-              {selectedContact.tenant || <Tag color="default">Không có chi nhánh</Tag>}
+            <Descriptions.Item label={<Space><CalendarOutlined /> Zweig</Space>}>
+              {selectedContact.tenant || <Tag color="default">Kein Zweig</Tag>}
             </Descriptions.Item>
 
-            <Descriptions.Item label={<Space><CalendarOutlined /> Thời gian gửi</Space>}>
+            <Descriptions.Item label={<Space><CalendarOutlined /> Zeitstempel</Space>}>
               {formatDateTime(selectedContact.createdAt)}
             </Descriptions.Item>
           </Descriptions>

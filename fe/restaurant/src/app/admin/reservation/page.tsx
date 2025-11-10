@@ -65,9 +65,9 @@ const statusColors: Record<string, string> = {
 
 const formatStatus = (status: number) => {
   switch (status) {
-    case 0: return 'Đang chờ';
-    case 1: return 'Hoàn thành';
-    case 2: return 'Đã hủy';
+    case 0: return 'Warten';
+    case 1: return 'Abgeschlossen';
+    case 2: return 'Storniert';
     default: return status;
   }
 };
@@ -132,7 +132,7 @@ const ReservationView: React.FC = () => {
       console.log("Updating reservation status:", reservationId, status);
       setModalLoading(true);
       await axiosInstance.post(`${UPDATE_RESERVATION_STATUS}`, { reservationId, status });
-      message.success(`Đơn đặt bàn đã được chuyển sang trạng thái: ${formatStatus(status)}`);
+      message.success(`Die Tischreservierung wurde auf den Status geändert: ${formatStatus(status)}`);
       setModalVisible(false);
       fetchReservations(page);
     } catch (error) {
@@ -147,7 +147,7 @@ const ReservationView: React.FC = () => {
 
   const columns = useMemo(() => [
     {
-      title: "Khách iu",
+      title: "Gastname",
       dataIndex: "name",
       key: "name",
       width: 150,
@@ -155,14 +155,14 @@ const ReservationView: React.FC = () => {
       render: (text: string) => <Space><UserOutlined style={{ color: '#1890ff' }} /> {text}</Space>
     },
     {
-      title: "Gọi cho",
+      title: "Telefonnummer",
       dataIndex: "phoneNumber",
       key: "phone",
       width: 120,
       render: (text: string) => <Text copyable>{text}</Text>
     },
     {
-      title: "Số bạn",
+      title: "Anzahl der Personen",
       dataIndex: "partySize",
       key: "partySize",
       width: 80,
@@ -171,7 +171,7 @@ const ReservationView: React.FC = () => {
       render: (text: number) => <Tag color="geekblue" icon={<TeamOutlined />}>{text}</Tag>
     },
     {
-      title: "Ngày hẹn",
+      title: "Datum",
       dataIndex: "reservationDate",
       key: "date",
       width: 120,
@@ -179,14 +179,14 @@ const ReservationView: React.FC = () => {
       render: (date: string) => dayjs(date).format("DD/MM/YYYY")
     },
     {
-      title: "Giờ đón",
+      title: "Uhrzeit",
       dataIndex: "reservationTime",
       key: "time",
       width: 100,
       render: (time: string) => <Space><ClockCircleOutlined /> {time}</Space>
     },
     {
-      title: "Tình trạng",
+      title: "Status",
       dataIndex: "status",
       key: "status",
       width: 120,
@@ -197,7 +197,7 @@ const ReservationView: React.FC = () => {
       )
     },
     {
-      title: "Chi nhánh",
+      title: "Zweig",
       dataIndex: "tenant",
       key: "tenant",
       width: 120,
@@ -208,13 +208,13 @@ const ReservationView: React.FC = () => {
       )
     },
     {
-      title: "Hành động",
+      title: "Aktion",
       key: "action",
       width: 100,
       fixed: 'right' as const,
       render: (_: any, record: Reservation) => (
         <Button size="small" type="primary" icon={<MoreOutlined />} onClick={() => openReservationModal(record.id)} className={reservationStyles.modalFooterButton}>
-          Xem ngay!
+          Jetzt ansehen!
         </Button>
       ),
     },
@@ -227,7 +227,7 @@ const ReservationView: React.FC = () => {
     return (
       <ul className={reservationStyles.calendarEventList}>
         {dayReservations.map((r: any) => (
-          <Tooltip key={r.id} title={`${r.name} - ${r.partySize} người - ${formatStatus(r.status)}`}>
+          <Tooltip key={r.id} title={`${r.name} - ${r.partySize} Personen - ${formatStatus(r.status)}`}>
             <li
               className={reservationStyles.calendarEventItem}
               style={{ backgroundColor: statusColors[r.status] }} // Màu vẫn dùng inline để linh hoạt theo status
@@ -245,7 +245,7 @@ const ReservationView: React.FC = () => {
   const tabsItems = [
     {
       key: "table",
-      label: <Space><TeamOutlined /> Danh sách Đặt bàn</Space>,
+      label: <Space><TeamOutlined /> Liste der Tischreservierungen</Space>,
       children: (
         <Table
           dataSource={displayedReservations}
@@ -258,7 +258,7 @@ const ReservationView: React.FC = () => {
             onChange: (p: any, ps: any) => { setPage(p); setPageSize(ps); },
             showSizeChanger: true,
             pageSizeOptions: ['5', '10', '20', '50'],
-            showTotal: (total: any, range: any) => `${range[0]}-${range[1]} / ${total} đơn`
+            showTotal: (total: any, range: any) => `${range[0]}-${range[1]} / ${total} Einträge`,
           }}
           loading={loading}
           scroll={{ x: 900 }}
@@ -268,7 +268,7 @@ const ReservationView: React.FC = () => {
     },
     {
       key: "calendar",
-      label: <Space><CalendarOutlined /> Xem theo Lịch</Space>,
+      label: <Space><CalendarOutlined /> Kalenderansicht</Space>,
       children: <Calendar dateCellRender={dateCellRender} fullscreen={true} />
     },
   ];
@@ -361,12 +361,12 @@ const ReservationView: React.FC = () => {
           <Row justify="space-between" align="middle" className={reservationStyles.headerRow}>
             <Col>
               <Title level={3} className={reservationStyles.pageTitle}>
-                <DashboardOutlined /> Quản lý Đặt Bàn Vui Vẻ
+                <DashboardOutlined /> Tischreservierungsmanagement
               </Title>
             </Col>
             <Col>
               <Space size="middle">
-                <Text strong style={{ color: '#555', fontSize: 16 }}>Xem tình trạng:</Text>
+                <Text strong style={{ color: '#555', fontSize: 16 }}>Status anzeigen:</Text>
                 <Select
                   value={statusFilter}
                   className={reservationStyles.filterSelect}
@@ -375,10 +375,10 @@ const ReservationView: React.FC = () => {
                     setPage(1);
                   }}
                 >
-                  <Option value="">Tất cả</Option>
-                  <Option value="0">Đang chờ (chăm sóc)</Option>
-                  <Option value="1">Hoàn thành (vui vẻ)</Option>
-                  <Option value="2">Đã hủy (tiếc quá)</Option>
+                  <Option value="">Alle</Option>
+                  <Option value="0">Warten (Pflege)</Option>
+                  <Option value="1">Abgeschlossen (zufrieden)</Option>
+                  <Option value="2">Storniert (schade)</Option>
                 </Select>
               </Space>
             </Col>
@@ -391,7 +391,7 @@ const ReservationView: React.FC = () => {
           title={
             <Space className={modalStyles.modalTitle}>
               <SmileOutlined />
-              <Text strong>Chi tiết Đặt bàn #{selectedReservation?.id || '...'}</Text>
+              <Text strong>Details zur Tischreservierung #{selectedReservation?.id || '...'}</Text>
               {selectedReservation && (
                 <Tag
                   color={statusColors[selectedReservation.status]}
@@ -413,7 +413,7 @@ const ReservationView: React.FC = () => {
                   onClick={() => setModalVisible(false)}
                   className={modalStyles.modalFooterButton}
                 >
-                  Đóng lại
+                  Schließen
                 </Button>,
                 selectedReservation.status === 0 && (
                   <Button
@@ -424,7 +424,7 @@ const ReservationView: React.FC = () => {
                     onClick={() => updateStatus(selectedReservation.id, 2)}
                     className={modalStyles.modalFooterButton}
                   >
-                    Hủy đơn này
+                    Stornieren
                   </Button>
                 ),
                 selectedReservation.status === 0 && (
@@ -436,7 +436,7 @@ const ReservationView: React.FC = () => {
                     onClick={() => updateStatus(selectedReservation.id, 1)}
                     className={`${modalStyles.modalFooterButton} ${modalStyles.modalCompleteButton}`}
                   >
-                    Hoàn thành!
+                    Abschließen!
                   </Button>
                 ),
               ]
@@ -445,7 +445,7 @@ const ReservationView: React.FC = () => {
         >
           {modalLoading ? (
             <div style={{ textAlign: 'center', padding: 50 }}>
-              <Spin size="large" tip="Đang gọi chi tiết...">
+              <Spin size="large" tip="Loading...">
                 <div style={{ height: 100 }} /> {/* just acts as spinner body */}
               </Spin>
             </div>
@@ -457,7 +457,7 @@ const ReservationView: React.FC = () => {
               className={modalStyles.modalContentSpace}
             >
               <Alert
-                title={`Tình trạng hiện tại: ${formatStatus(selectedReservation.status)}`} // HA_MI updated
+                title={`Aktueller Status: ${formatStatus(selectedReservation.status)}`} // HA_MI updated
                 type={
                   selectedReservation.status === 0
                     ? 'warning'
@@ -469,10 +469,10 @@ const ReservationView: React.FC = () => {
                 className={modalStyles.alertMessage}
                 description={
                   selectedReservation.status === 0
-                    ? 'Đang chờ khách đến, chuẩn bị chu đáo nhé!'
+                    ? 'Warten auf die Ankunft, bitte gut vorbereiten!'
                     : selectedReservation.status === 1
-                      ? 'Tuyệt vời! Khách đã dùng bữa và rất hài lòng.'
-                      : 'Tiếc quá, khách đã hủy hẹn. Hãy liên hệ lại sau nhé!'
+                      ? 'Ausgezeichnet! Der Gast hat gegessen und ist sehr zufrieden.'
+                      : 'Leider hat der Gast die Reservierung storniert. Bitte kontaktieren Sie ihn später!'
                 }
               />
               <Descriptions
@@ -486,37 +486,37 @@ const ReservationView: React.FC = () => {
                 className={modalStyles.descriptionsContainer}
               >
                 <Descriptions.Item
-                  label={<Space><UserOutlined style={{ color: '#FF7043' }} /> Tên Khách</Space>}
+                  label={<Space><UserOutlined style={{ color: '#FF7043' }} /> Name des Gastes</Space>}
                   span={2}
                 >
                   <Text strong>{selectedReservation.name}</Text>
                 </Descriptions.Item>
 
                 <Descriptions.Item
-                  label={<Space><PhoneOutlined style={{ color: '#42A5F5' }} /> Điện thoại</Space>}
+                  label={<Space><PhoneOutlined style={{ color: '#42A5F5' }} /> Telefonnummer</Space>}
                   span={2}
                 >
                   <Text copyable>{selectedReservation.phoneNumber}</Text>
                 </Descriptions.Item>
 
                 <Descriptions.Item
-                  label={<Space><TeamOutlined style={{ color: '#66BB6A' }} /> Số bạn</Space>}
+                  label={<Space><TeamOutlined style={{ color: '#66BB6A' }} /> Anzahl der Personen</Space>}
                   span={1}
                 >
                   <Tag color="geekblue" className={modalStyles.descriptionTag}>
-                    {selectedReservation.partySize} người
+                    {selectedReservation.partySize} Personen
                   </Tag>
                 </Descriptions.Item>
 
                 <Descriptions.Item
-                  label={<Space><CalendarOutlined style={{ color: '#FF7043' }} /> Ngày hẹn</Space>}
+                  label={<Space><CalendarOutlined style={{ color: '#FF7043' }} /> Datum der Reservierung</Space>}
                   span={1}
                 >
                   {dayjs(selectedReservation.reservationDate).format('DD/MM/YYYY')}
                 </Descriptions.Item>
 
                 <Descriptions.Item
-                  label={<Space><ClockCircleOutlined style={{ color: '#FFD54F' }} /> Giờ đón</Space>}
+                  label={<Space><ClockCircleOutlined style={{ color: '#FFD54F' }} /> Uhr der Ankunft</Space>}
                   span={2}
                 >
                   <Tag color="volcano" className={modalStyles.descriptionTag}>
@@ -525,12 +525,12 @@ const ReservationView: React.FC = () => {
                 </Descriptions.Item>
 
                 <Descriptions.Item
-                  label={<Space><MessageOutlined style={{ color: '#42A5F5' }} /> Lời nhắn</Space>}
+                  label={<Space><MessageOutlined style={{ color: '#42A5F5' }} /> Nachricht</Space>}
                   span={2}
                 >
                   {selectedReservation.message || (
                     <Text type="secondary">
-                      Khách không để lại lời nhắn nào, bạn có thể gọi hỏi thêm!
+                      Der Gast hat keine Nachricht hinterlassen, Sie können ihn gerne anrufen!
                     </Text>
                   )}
                 </Descriptions.Item>
@@ -538,7 +538,7 @@ const ReservationView: React.FC = () => {
             </Space>
           ) : (
             <Text type="secondary">
-              Không tìm thấy thông tin đặt bàn, có thể khách đã đi lạc đâu đó rồi!
+              Keine Reservierungsinformationen gefunden, der Gast könnte sich verirrt haben!
             </Text>
           )}
         </Modal>
